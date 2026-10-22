@@ -42,7 +42,9 @@ git status --short --branch
 
 
 def git(directory, *argv):
-    return subprocess.check_output(["git", "-c", f"safe.directory={directory}", "-C", str(directory), *argv], text=True).strip()
+    safe = ["-c", f"safe.directory={ROOT.as_posix()}",
+            "-c", f"safe.directory={(ROOT / 'op-src').as_posix()}"]
+    return subprocess.check_output(["git", *safe, "-C", str(directory), *argv], text=True).strip()
 
 
 def main():
