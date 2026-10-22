@@ -71,6 +71,8 @@ the host workspace when a container is removed.
 The filesystem lock coordinates this framework's runs in one workspace. It
 does not reserve hardware against unrelated users; `npu-smi` is checked as well.
 A busy device or a held lock causes failure with a retained experiment status.
+Select and commit sources before starting an experiment, and leave them unchanged
+until it finishes. The run snapshots record the source state at the start.
 
 ## Configuration
 

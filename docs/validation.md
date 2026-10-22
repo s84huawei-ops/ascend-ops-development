@@ -11,7 +11,7 @@ host installations were not modified.
 - Python 3.12.13, torch 2.10.0+cpu, torch-npu 2.10.0.post2, CANN 9.0.1.
 - Private operator repository: `s84huawei-ops/ascend-op-demo`.
 - `v0.1.0`: `c353c260ffc89c29928702cf678c854cb74fc132`, 1024-element tiles.
-- `v0.1.1`: `5de8044` (full SHA retained in each run's sources.json), 2048-element tiles.
+- `v0.1.1`: `5de8044402685bb50ab6765d4e1f3aee94f9e2e1`, 2048-element tiles.
 
 Both versions expose the same FP16 addition API through the compiled PyTorch
 adapter and generated ACLNN operator package. The tile variants demonstrate
@@ -28,11 +28,16 @@ results, benchmark measurements, and requested raw/processed profiler reports.
 | `runs/1022-1313-verify-v010` | v0.1.0 | Fresh build, torch_npu correctness, benchmark, msprof, msprof op, binary simulator: all passed |
 | `runs/1022-1321-verify-v011` | v0.1.1 | Independent fresh build and the same complete pipeline: all passed |
 | `runs/1022-1326-reproduce-v010` | v0.1.0, restored with switch_operator.sh | Reused the original version's cache; correctness and benchmark passed |
+| `runs/1022-1349-add-all` | v0.1.1, framework 2eda722 | Standard configs/all.json with allow_dirty=false: correctness, benchmark and all three profilers passed; both repositories remained clean |
 
-These implementation-time runs explicitly set `allow_dirty=true` to retain
+The first three implementation-time runs explicitly set `allow_dirty=true` to retain
 framework changes while developing. They still capture actual files, hashes,
 diffs, and both repository revisions. Normal example configurations require
 clean committed sources.
+
+The final standard run produced four matching numeric reports from msprof,
+one from msprof op, and one from binary simulation. Profiler auxiliary files
+also remain inside that experiment rather than making the source tree dirty.
 
 Both full runs checked `[8, 2048]`, `[1]`, `[17]`, and `[16387]` against a CPU
 reference, including partial tiles and unaligned transfers. Maximum absolute
@@ -59,6 +64,13 @@ The busy-device test injects an occupancy error; it does not start a competing
 NPU workload. Checks against the actual device occurred before experiment stages.
 Filesystem locking coordinates this workspace only and cannot reserve hardware
 against unrelated users.
+
+Git-bundle synchronization was exercised from Windows over SSH: the server
+fast-forwarded the committed framework and checked out its exact operator pin.
+Both server working trees were clean afterwards. Operator main and both version
+tags were pushed to the private repository. Framework implementation commits are
+available locally and on the server; publishing them to GitHub remains a normal
+local `git push` step.
 
 ## Known limits
 
