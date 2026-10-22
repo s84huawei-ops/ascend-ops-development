@@ -1,0 +1,5 @@
+{
+  "name": "add-simulator",
+  "device": 6,
+  "profiling": {"backends": ["simulator"], "required": true, "simulator_shape": [16], "timeout_s": 300}
+}

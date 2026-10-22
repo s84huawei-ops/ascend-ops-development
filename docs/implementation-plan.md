@@ -1,6 +1,6 @@
 # Ascend framework implementation plan
 
-Status: draft plan; no implementation yet. User agreements were recorded on 2026-10-22. The canonical record of decisions and dependencies is the [wayfinder map](../.scratch/ascend-framework/map.md); this document organizes the future steps and acceptance criteria. Proposals that require a decision are marked and have their own tickets. Research findings do not replace tests on the server.
+Status: implemented and validated on the target server, following the user's authorization to move beyond planning on 2026-10-22. The original decisions and dependencies are recorded in the [wayfinder map](../.scratch/ascend-framework/map.md). The [usage guide](usage.md) describes the implemented interface; [validation results](validation.md) distinguish actual checks from remaining limitations.
 
 ## Goal and agreed scope
 
@@ -10,14 +10,14 @@ Deployment will take place in `s84huawei-ops/ascend-ops-development`, on the ser
 
 The user confirmed:
 
-- A demo operator in a separate, future repository, `s84huawei-ops/ascend-op-demo`, included as the `op-src` submodule.
+- A demo operator in the separate repository `s84huawei-ops/ascend-op-demo`, included as the `op-src` submodule.
 - Local editing and version transfer through Git. Results remain on the server and can be downloaded.
 - The `scripts/python` directory, correcting the typo in the original description.
 - One NPU selected in the configuration, with an availability check. The initial candidate is NPU 6; that device has not been reserved.
 - Separate measurements of total benchmark time and operator execution on the NPU, plus profiling artifacts.
 - Two selectable backends: a physical NPU with `msprof`, and simulation through `msprof op simulator`.
 
-## Proposed target structure
+## Project structure
 
 ```text
 ascend-ops-development/
@@ -33,7 +33,7 @@ ascend-ops-development/
     ascend-framework/    # local map and separate decision tickets
 ```
 
-This describes responsibilities rather than a list of implemented files. Kernel sources, the operator definition, build system, and PyTorch binding belong in `op-src`; the general experiment workflow and result storage belong in the framework. The integration research and experiment contract ticket will establish the exact boundary.
+Kernel sources, the operator definition, build system, simulator ABI/data preparation, and PyTorch binding belong in the independent `op-src` repository. The framework implements container orchestration, configuration, experiment stages, and result storage. The operator repository has been created as a private repository.
 
 ## Findings from completed research
 
@@ -43,9 +43,9 @@ The [profiling research](research/profiling-backends.md) confirms through docume
 
 Isolation consideration: selecting physical NPU6 for the benchmark does not automatically determine the simulator device/runtime. Restrictions in older releases concerning logical device 0 must be verified for CANN 9.0.1 before implementing the simulation launcher. Do not use shared physical NPU0 as a default workaround.
 
-Both reports cite official sources and distinguish recommendations from successful tests. Neither backend nor the demo has been executed yet. Research is complete; contract tickets remain open.
+Both reports cite official sources and distinguish recommendations from successful tests. Implementation has since verified the custom ACLNN operator through torch_npu, including unaligned tails, and generated valid msprof and msprof op reports. The Python simulator path produces data but crashes during process teardown in this stack. Binary simulation of the identical compiled kernel passes and is the default. See the usage guide for the explicit simulator entry modes.
 
-## Future implementation sequence
+## Implementation sequence
 
 | Step | Outcome | Prerequisite / decision |
 | --- | --- | --- |
@@ -56,17 +56,17 @@ Both reports cite official sources and distinguish recommendations from successf
 | 5. Profiling | Separate device and simulator runs; preserved raw reports and an explanation of their meaning | Profiling research; working minimal operator |
 | 6. Reproduction and instructions | Switch operator version, run a second experiment, reproduce the first from recorded SHAs, and document usage | [Rollout and acceptance criteria](../.scratch/ascend-framework/issues/06-rollout-and-acceptance.md) |
 
-These steps describe implementation after the decisions are settled. This session does not create the operator repository, submodule, scripts, or container.
+The user subsequently authorized full implementation. The repository, submodule, scripts, and dedicated container have been created; acceptance is checked against the criteria below.
 
 ## Versions and transferring work
 
 The user-approved workflow is local editing, committing/pushing operator sources, recording their SHA in the framework repository, committing/pushing the framework, and fetching both versions on the server. A version specified by a tag or branch must be resolved to a SHA and recorded in the results. An experiment should not silently fetch the latest branch without recording the change.
 
-Proposal to resolve: version switching refuses to overwrite local changes; running a measured experiment requires clean sources or an explicit development mode that records their diff. An artifact built for a previous operator version must not be silently reused after a version switch. The switching script does not delete local changes or results.
+Implemented contract: version switching refuses to overwrite local changes and stages the selected SHA in the framework. Experiments require clean sources unless `allow_dirty=true` explicitly enables development mode. Both source archives and hashes/diffs are retained. Operator versions and actual source contents select distinct cache entries; the switching script does not delete local changes or results.
 
 ## Separating measurements
 
-Proposed result definitions, to be approved in the experiment contract:
+Implemented result definitions:
 
 | Result | Meaning |
 | --- | --- |
@@ -76,17 +76,17 @@ Proposed result definitions, to be approved in the experiment contract:
 | msprof metrics | A separate execution with the NPU profiler; kernel times, available counters, and raw reports |
 | Simulator metrics | A separate execution of the kernel model; cycles and model metrics, with the SoC and limitations identified |
 
-Profiler results do not replace total benchmark time measured without profiling. Check correctness before measurement; warmup, iteration count, shapes, types, and data seed should come from the saved configuration. The exact event measurement method and statistics require clarification after choosing how the operator is invoked.
+Profiler results do not replace total benchmark time measured without profiling. Correctness precedes measurement; warmup, iteration count, shapes, types, and data seed come from the saved configuration. Stream events surround individual calls; synchronized loop time and complete subprocess time are recorded separately.
 
-## Proposed experiment directory
+## Experiment directory
 
-Required name: `runs/<MMDD-HHMM>-<name>`, with `name=exp` by default. The timezone must be explicitly agreed; the host script currently selects Shanghai, while the user works in Europe/Warsaw.
+Required name: `runs/<MMDD-HHMM>-<name>`, with `name=exp` by default. The configurable timezone defaults to Europe/Warsaw. Container time and run names use this default consistently.
 
-Example layout, subject to approval:
+Example layout:
 
 ```text
 runs/1022-1430-add-fp16/
-  config.original.yaml
+  config.original.json
   config.resolved.json
   manifest.json
   status.json
@@ -98,11 +98,11 @@ runs/1022-1430-add-fp16/
     simulator/
 ```
 
-The configuration format (YAML/JSON), filenames, and schema are not yet settled. The `manifest` should identify both Git SHAs, dirty state, image tag/digest/ID, device, SoC, driver/CANN/torch/torch_npu versions, environment variables needed for reproduction, stages, and executed commands. Do not copy the entire process environment, which may contain tokens.
+The implementation uses strictly validated JSON. The manifest, sources.json, capability report, and stage logs together identify both Git SHAs, dirty state, image reference/ID, device, SoC, driver/toolchain/package versions, selected environment variables, stages, and executed commands. The entire process environment is not copied.
 
-Create the directory before compilation and tests. On failure, preserve the configuration, log, and final status. Proposal that preserves the exact naming format: if atomic directory creation encounters a collision, refuse to overwrite and require the next minute or a different `name`; the experiment contract ticket owns the final choice. Raw profiler reports remain available alongside processed results.
+Directories are created before compilation and tests. Failures retain configuration, logs, and final status. Atomic creation refuses collisions without modifying previous results; choose the next minute or a different `name`. Raw reports remain available alongside processed results. Each run also retains source archives, build packages, and kernel binaries.
 
-## Acceptance criteria for future implementation
+## Acceptance criteria
 
 | Test | Evidence required for acceptance |
 | --- | --- |
@@ -118,8 +118,8 @@ Create the directory before compilation and tests. On failure, preserve the conf
 
 The `unsupported` mode must be explicitly distinguished from success and execution failure. If the simulator proves unsupported in the target environment, implementation must not claim that the two-backend requirement passed acceptance; scope or integration will need a further decision.
 
-## Next step in the map
+## Implementation handoff
 
-Both independent research tasks are complete. The first decision to resolve together is [operator versioning](../.scratch/ascend-framework/issues/03-operator-versioning.md), followed by the container and experiment contracts. Under `wayfinder`, this session creates the map and completes research; it does not manually resolve further tickets.
+The implementation follows the agreed local-edit/Git/server workflow, using one selectable physical NPU, the pinned image, and isolated operator installation prefixes. The initial planning-only scope was superseded by the user's request to implement. Runtime findings and remaining limitations must be reported explicitly rather than inferred from tool availability.
 
-The documents remain local working files, with no commits on `main`. Publication of the two reports and inventory on the proposed `research/...` branches, required by the `wayfinder` workflow, did not occur: automatic approval review required explicit authorization to send environment information to the remote repository. No PR was created and no changes were merged. Publication approval is not needed to read the plan or continue working on the local map.
+The user committed and published the English planning documentation on `main` before implementation. Separate research branches were not created. Operator sources are maintained in the private submodule repository; results and build caches are excluded from Git.

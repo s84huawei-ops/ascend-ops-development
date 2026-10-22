@@ -1,0 +1,7 @@
+runs/
+.cache/
+.locks/
+__pycache__/
+*.py[cod]
+core
+core.*

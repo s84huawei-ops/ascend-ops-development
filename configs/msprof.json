@@ -1,0 +1,5 @@
+{
+  "name": "add-msprof",
+  "device": 6,
+  "profiling": {"backends": ["msprof"], "required": true}
+}

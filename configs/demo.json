@@ -1,0 +1,7 @@
+{
+  "name": "add-fp16",
+  "device": 6,
+  "data": {"shape": [8, 2048]},
+  "benchmark": {"warmup": 5, "iterations": 50},
+  "profiling": {"backends": []}
+}

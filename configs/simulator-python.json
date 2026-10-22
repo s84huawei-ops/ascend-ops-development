@@ -1,0 +1,5 @@
+{
+  "name": "add-simulator-python",
+  "device": 6,
+  "profiling": {"backends": ["simulator"], "simulator_mode": "python", "required": true}
+}

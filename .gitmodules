@@ -1,0 +1,3 @@
+[submodule "op-src"]
+	path = op-src
+	url = ../ascend-op-demo.git

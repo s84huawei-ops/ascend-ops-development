@@ -1,0 +1,5 @@
+{
+  "name": "add-all",
+  "device": 6,
+  "profiling": {"backends": ["msprof", "msprof-op", "simulator"], "required": true, "timeout_s": 300}
+}
