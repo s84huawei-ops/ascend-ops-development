@@ -36,6 +36,24 @@ def write_json(path, value):
     temporary.replace(path)
 
 
+def timezone_database_available():
+    """Return True when the IANA timezone database can be found locally."""
+    import importlib.util
+    return Path("/usr/share/zoneinfo").is_dir() or importlib.util.find_spec("tzdata") is not None
+
+
+def resolve_timezone(name):
+    """Resolve an IANA timezone; fall back to UTC when the local database is missing."""
+    try:
+        return ZoneInfo(name)
+    except TypeError:
+        raise
+    except ZoneInfoNotFoundError:
+        if timezone_database_available():
+            raise
+        return timezone.utc
+
+
 def configuration(path):
     raw = json.loads(Path(path).read_text(encoding="utf-8"))
     def merge(default, supplied):
@@ -50,9 +68,9 @@ def configuration(path):
     if not isinstance(cfg["name"], str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,63}", cfg["name"]):
         raise ValueError("name must be 1–64 ASCII letters, digits, dots, underscores or hyphens; start with a letter/digit")
     try:
-        ZoneInfo(cfg["timezone"])
-    except (ZoneInfoNotFoundError, TypeError) as exc:
-        raise ValueError("Timezone is unavailable; check its name or install tzdata on Windows") from exc
+        resolve_timezone(cfg["timezone"])
+    except (ZoneInfoNotFoundError, TypeError):
+        raise ValueError("Timezone is unavailable; check its name or install tzdata on Windows") from None
     def integer(value, low, high):
         return type(value) is int and low <= value <= high
     if not integer(cfg["device"], 0, 63) or cfg["soc"] != "Ascend910B2":
@@ -322,7 +340,7 @@ def execute(cfg, run):
         status["status"] = "interrupted" if isinstance(exc, KeyboardInterrupt) else "failed"
         status["error"] = str(exc) or type(exc).__name__
     finally:
-        status["finished_at"] = datetime.now(ZoneInfo(cfg["timezone"])).isoformat()
+        status["finished_at"] = datetime.now(resolve_timezone(cfg["timezone"])).isoformat()
         write_json(state_file, status)
     print(json.dumps({"run": str(run), **status}, indent=2))
     return 0 if status["status"] in ("ok", "partial") else 1
@@ -338,7 +356,7 @@ def main():
     except (ValueError, OSError, TypeError) as exc:
         # Even an invalid config gets its own diagnostic artifact, before any NPU work.
         try:
-            diagnostic_timezone = ZoneInfo(DEFAULT["timezone"])
+            diagnostic_timezone = resolve_timezone(DEFAULT["timezone"])
         except ZoneInfoNotFoundError:
             diagnostic_timezone = timezone.utc
         timestamp = datetime.now(diagnostic_timezone).strftime("%m%d-%H%M")
@@ -354,7 +372,7 @@ def main():
     if args.device_only:
         print(cfg["device"])
         return 0
-    timestamp = datetime.now(ZoneInfo(cfg["timezone"])).strftime("%m%d-%H%M")
+    timestamp = datetime.now(resolve_timezone(cfg["timezone"])).strftime("%m%d-%H%M")
     run = ROOT / "runs" / f"{timestamp}-{cfg['name']}"
     run.parent.mkdir(exist_ok=True)
     run.mkdir()  # Atomic; never overwrite an experiment with the same name.
@@ -362,7 +380,7 @@ def main():
         (run / subdir).mkdir()
     shutil.copyfile(args.config, run / "config.original.json")
     write_json(run / "config.resolved.json", cfg)
-    write_json(run / "manifest.json", {"created_at": datetime.now(ZoneInfo(cfg["timezone"])).isoformat(),
+    write_json(run / "manifest.json", {"created_at": datetime.now(resolve_timezone(cfg["timezone"])).isoformat(),
         "physical_npu": cfg["device"], "logical_npu": 0, "soc": cfg["soc"],
         "image_id": os.environ.get("ASCEND_IMAGE_ID"), "image_reference": os.environ.get("ASCEND_IMAGE_REFERENCE")})
     def interrupt(signum, frame):

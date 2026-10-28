@@ -2,7 +2,7 @@
 # Adapted from the original docker_run.sh in the server workspace.
 set -euo pipefail
 ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
-IMAGE=${1:-quay.io/ascend/vllm-ascend:v0.23.0rc1@sha256:9fd154211d2faee7735cfe40785f863603e42ccd53bfb4bca82dc98c9446ea0a}
+IMAGE=${1:-quay.io/ascend/vllm-ascend:v0.23.0rc1-a3}
 DEVICE=${ASCEND_DEVICE_ID:-6}
 NAME=${2:-ascend-ops-dev-npu${DEVICE}}
 [[ $DEVICE =~ ^[0-9]+$ ]] || { echo 'ASCEND_DEVICE_ID must be an integer' >&2; exit 2; }
