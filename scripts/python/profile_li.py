@@ -461,19 +461,15 @@ def worker(a: argparse.Namespace) -> int:
                 "Cannot import 'mstx'; required for targeting the Lightning Indexer "
                 "with msprof op --mstx=on. Check CANN profiling environment."
             ) from exc
-        profile_warmup = 0 if a.mode == "simulator" else a.warmup
+        profile_warmup = 0 if a.mode == "simulator" or a.mode == "detailed" else a.warmup
         if a.mode == "simulator":
             print("Simulator: warmup disabled; profile a single operator invocation", flush=True)
         for _ in range(profile_warmup):
             fn()
         torch.npu.synchronize()
         print(f"Starting MSTX range {PROFILE_MARKER}", flush=True)
-        range_id = mstx.range_start(PROFILE_MARKER, None)
-        try:
-            output = fn()  # Exactly one LI invocation inside profiled range.
-            torch.npu.synchronize()
-        finally:
-            mstx.range_end(range_id)
+        output = fn()
+        torch.npu.synchronize()
         if a.validate:
             print("Validation: " + json.dumps(validate_output(torch, output, a)), flush=True)
         print(f"Finished MSTX range {PROFILE_MARKER}", flush=True)
