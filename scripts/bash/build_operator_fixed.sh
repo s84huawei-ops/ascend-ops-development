@@ -108,6 +108,35 @@ case "$SOC_VERSION" in
         ;;
 esac
 
+# Force a recompile of the target operator's device kernels.
+#
+# The kernel-compilation rules emitted by cmake/symbol.cmake are CUSTOM_COMMAND
+# rules with only ORDER-ONLY dependencies (no explicit inputs). Ninja therefore
+# treats a kernel as up-to-date as long as its *.done marker exists, and will
+# NOT recompile the device kernel when op_kernel sources change: the operator
+# silently keeps running the previously built binary. Since csrc/build (the
+# CMake/Ninja cache) is preserved across builds, remove the stale markers and
+# kernel outputs for the target operator so the freshly copied sources are
+# actually recompiled.
+BUILD_DIR="$VLLM_ROOT/csrc/build/binary/${SOC_VERSION}"
+if [[ -d "$BUILD_DIR" ]]; then
+    for marker in "$BUILD_DIR"/gen/"${OP_NAME}"_"${SOC_VERSION}"_*.done; do
+        if [[ -e "$marker" ]]; then
+            rm -f -- "$marker"
+            echo "Removed stale kernel marker: $marker"
+        fi
+    done
+    if [[ -d "$BUILD_DIR/bin/$OP_NAME" ]]; then
+        rm -rf -- "$BUILD_DIR/bin/$OP_NAME"
+        echo "Removed stale kernel outputs: $BUILD_DIR/bin/$OP_NAME"
+    fi
+    src_copy_marker="$BUILD_DIR/src/$OP_NAME/${OP_NAME}_${SOC_VERSION}_src_copy.done"
+    if [[ -e "$src_copy_marker" ]]; then
+        rm -f -- "$src_copy_marker"
+        echo "Removed stale source-copy marker: $src_copy_marker"
+    fi
+fi
+
 printf 'Building custom ops for SoC %s (full set for %s)\n' "$SOC_VERSION" "$SOC_ARG"
 bash "$BUILD_ACLNN" "$VLLM_ROOT" "$SOC_VERSION"
 

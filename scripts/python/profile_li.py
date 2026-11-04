@@ -267,8 +267,9 @@ def driver(a: argparse.Namespace) -> int:
             if is_simulator:
                 msprof_cmd += ["simulator", f"--soc-version={a.soc_version}"]
             msprof_cmd += [
-                "--mstx=on", f"--mstx-include={PROFILE_MARKER}",
-                "--launch-count=1", f"--output={profile_root}",
+                "--kernel-name=LightningIndexer",
+                "--launch-count=1",
+                f"--output={profile_root}",
             ]
             # Simulator has a different metrics vocabulary; do not pass the
             # hardware-only Default set unless the user explicitly overrides it.
