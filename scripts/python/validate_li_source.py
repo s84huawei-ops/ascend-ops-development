@@ -74,6 +74,7 @@ def main():
             (17,4096,64,'bf16','bf16','BSND',2048,False,True),
             (257,4096,64,'bf16','bf16','BSND',2048,True,True),
             (513,8193,64,'bf16','bf16','BSND',2048,True,False),
+            (257,4096,64,'bf16','bf16','TND_BATCH2',2048,True,True),
             (65,4097,64,'bf16','bf16','TND',2048,True,False),
             (16,4097,64,'bf16','bf16','PA_BSND',2048,False,False),
             (2,4096,64,'bf16','bf16','BSND',2048,True,False),
@@ -85,16 +86,19 @@ def main():
     for case_index, (qlen,klen,heads,qdtype,wdtype,layout,topk,values,zero) in enumerate(cases):
         dtype = torch.bfloat16 if qdtype == 'bf16' else torch.float16
         weight_dtype = {'bf16':torch.bfloat16,'fp16':torch.float16,'float':torch.float32}[wdtype]
-        query = (torch.randn(1,qlen,heads,128)*0.25).to(dtype).to(device)
-        key = (torch.randn(1,klen,1,128)*0.25).to(dtype).to(device)
-        weights = (torch.randn(1,qlen,heads)*0.25).to(weight_dtype).to(device)
+        batch = 2 if layout == 'TND_BATCH2' else 1
+        query = (torch.randn(batch,qlen,heads,128)*0.25).to(dtype).to(device)
+        key = (torch.randn(batch,klen,1,128)*0.25).to(dtype).to(device)
+        weights = (torch.randn(batch,qlen,heads)*0.25).to(weight_dtype).to(device)
         if zero:
             weights.zero_()
         block_table = None
         query_layout = 'BSND'
         key_layout = 'BSND'
-        if layout == 'TND':
-            query, key, weights = query.squeeze(0), key.squeeze(0), weights.squeeze(0)
+        if layout in ('TND','TND_BATCH2'):
+            query = query.reshape(batch*qlen,heads,128)
+            key = key.reshape(batch*klen,1,128)
+            weights = weights.reshape(batch*qlen,heads)
             query_layout = key_layout = 'TND'
         elif layout == 'PA_BSND':
             pages = (klen + 127) // 128
@@ -103,8 +107,8 @@ def main():
             key = padded.reshape(pages,128,1,128)
             block_table = torch.arange(pages,dtype=torch.int32,device=device).reshape(1,-1)
             key_layout = 'PA_BSND'
-        qlengths = torch.tensor([qlen],dtype=torch.int32,device=device)
-        klengths = torch.tensor([klen],dtype=torch.int32,device=device)
+        qlengths = torch.arange(1,batch+1,dtype=torch.int32,device=device)*qlen
+        klengths = torch.arange(1,batch+1,dtype=torch.int32,device=device)*klen
         direct.arm(query.data_ptr())
         output = torch_npu.npu_lightning_indexer(
             query,key,weights,actual_seq_lengths_query=qlengths,actual_seq_lengths_key=klengths,
@@ -128,7 +132,7 @@ def main():
             assert torch.equal(output[0],expected_indices), f'{label}: indices differ for case {case_index}'
             if values:
                 assert torch.equal(output[1],expected_values), f'{label}: values differ for case {case_index}'
-        case = dict(query_length=qlen,key_length=klen,heads=heads,query_dtype=qdtype,
+        case = dict(batch=batch,query_length=qlen,key_length=klen,heads=heads,query_dtype=qdtype,
                     weights_dtype=wdtype,layout=layout,topk=topk,return_values=values,
                     zero_weights=zero,key=meta['key'],blocks=meta['blocks'],exact=True)
         print('CORRECT',case_index,json.dumps(case),flush=True)
