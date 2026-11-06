@@ -4,6 +4,32 @@
 # environment (e.g. li-sfa-debug).
 set -euo pipefail
 
+SOC_OVERRIDE=""
+PACKAGE_OPS=""
+PACKAGE_VENDOR=""
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --soc|--package-ops|--vendor)
+            [[ $# -ge 2 && -n "$2" && "$2" != --* ]] || { echo "Missing value for $1" >&2; exit 2; }
+            case "$1" in
+                --soc) SOC_OVERRIDE=$2 ;;
+                --package-ops) PACKAGE_OPS=$2 ;;
+                --vendor) PACKAGE_VENDOR=$2 ;;
+            esac
+            shift 2 ;;
+        --help)
+            echo 'Usage: build_operator_fixed.sh [--soc SOC] [--package-ops "op;dependency;..."] [--vendor NAME]'
+            echo 'An explicit package list requires a vendor and installs to _cann_ops_NAME.'
+            exit 0 ;;
+        *) echo "Unknown argument: $1" >&2; exit 2 ;;
+    esac
+done
+if [[ -n "$PACKAGE_OPS" || -n "$PACKAGE_VENDOR" ]]; then
+    [[ -n "$PACKAGE_OPS" && "$PACKAGE_VENDOR" =~ ^[A-Za-z][A-Za-z0-9_]*$ ]] || {
+        echo 'Specify both --package-ops and a valid --vendor name' >&2; exit 2;
+    }
+fi
+
 # Run from the project directory containing op-src/. This is trusted Bash config.
 CONFIG_FILE="$PWD/op-src/builder.env"
 [[ -f "$CONFIG_FILE" ]] || {
@@ -17,6 +43,12 @@ source "$CONFIG_FILE"
 [[ -n "${DST_DIR:-}" ]] || { echo "DST_DIR is missing or empty in $CONFIG_FILE" >&2; exit 1; }
 [[ -n "${OP_NAME:-}" ]] || { echo "OP_NAME is missing or empty in $CONFIG_FILE" >&2; exit 1; }
 [[ -n "${SOC_ARG:-}" ]] || { echo "SOC_ARG is missing or empty in $CONFIG_FILE" >&2; exit 1; }
+if [[ -n "$SOC_OVERRIDE" ]]; then
+    SOC_ARG=$SOC_OVERRIDE
+fi
+if [[ -n "$PACKAGE_OPS" && ";$PACKAGE_OPS;" != *";$OP_NAME;"* ]]; then
+    echo "The explicit package list must include OP_NAME '$OP_NAME'" >&2; exit 2
+fi
 
 # Relative source paths are relative to op-src; destination must be absolute.
 [[ "$SRC_DIR" == /* ]] || SRC_DIR="$(dirname -- "$CONFIG_FILE")/$SRC_DIR"
@@ -27,8 +59,9 @@ SRC_DIR=$(cd -- "$SRC_DIR" && pwd -P)
 PYTHON=${PYTHON:-python3}
 export MAX_JOBS=${MAX_JOBS:-8}
 
-[[ -d "$DST_DIR" ]] || { echo "Operator directory not found: $DST_DIR" >&2; exit 1; }
-DST_DIR=$(cd -- "$DST_DIR" && pwd -P)
+[[ -d "$(dirname -- "$DST_DIR")" ]] || { echo "Operator parent directory not found: $DST_DIR" >&2; exit 1; }
+DST_PARENT=$(cd -- "$(dirname -- "$DST_DIR")" && pwd -P)
+DST_DIR="$DST_PARENT/$(basename -- "$DST_DIR")"
 
 # Reject copying a directory into itself, its parent, or its child.
 if [[ "$SRC_DIR" == "$DST_DIR" || "$SRC_DIR" == "$DST_DIR/"* || "$DST_DIR" == "$SRC_DIR/"* ]]; then
@@ -40,7 +73,7 @@ fi
 }
 
 # Expected structure: <repository>/csrc/attention/<operator>
-VLLM_ROOT=$(cd -- "$DST_DIR/../../.." && pwd -P)
+VLLM_ROOT=$(cd -- "$DST_PARENT/../.." && pwd -P)
 [[ "$DST_DIR" == "$VLLM_ROOT/csrc/attention/$(basename -- "$DST_DIR")" ]] || {
     echo "Expected DST_DIR under <vllm-ascend>/csrc/attention/" >&2; exit 1;
 }
@@ -55,6 +88,7 @@ command -v "$PYTHON" >/dev/null
 # Copy directory CONTENTS (including hidden files), not a nested SRC_DIR directory.
 # Existing matching files are overwritten; destination-only files are retained.
 printf 'Copying %s -> %s\n' "$SRC_DIR" "$DST_DIR"
+mkdir -p -- "$DST_DIR"
 cp -a -- "$SRC_DIR/." "$DST_DIR/"
 [[ -d "$DST_DIR/op_host" && -d "$DST_DIR/op_kernel" ]] || {
     echo "Copied operator is missing op_host or op_kernel" >&2; exit 1;
@@ -137,8 +171,28 @@ if [[ -d "$BUILD_DIR" ]]; then
     fi
 fi
 
-printf 'Building custom ops for SoC %s (full set for %s)\n' "$SOC_VERSION" "$SOC_ARG"
-bash "$BUILD_ACLNN" "$VLLM_ROOT" "$SOC_VERSION"
+printf 'Building custom ops for SoC %s\n' "$SOC_VERSION"
+if [[ -n "$PACKAGE_OPS" ]]; then
+    # Build the explicitly selected operator and metadata dependencies into an
+    # independent vendor package. Preserve the existing installed custom ops.
+    if [[ -d "$VLLM_ROOT/csrc/build" ]]; then
+        mv -- "$VLLM_ROOT/csrc/build" "$BACKUP_DIR/build"
+    fi
+    (
+        cd -- "$VLLM_ROOT/csrc"
+        printf 'Explicit package: ops=%s vendor=%s soc=%s\n' "$PACKAGE_OPS" "$PACKAGE_VENDOR" "$SOC_VERSION"
+        bash build.sh --pkg "--ops=$PACKAGE_OPS" "--soc=$SOC_VERSION" \
+            "--vendor_name=$PACKAGE_VENDOR" "-j$MAX_JOBS" -O3
+        shopt -s nullglob
+        installers=(./build/cann-ops-transformer*.run)
+        [[ ${#installers[@]} -eq 1 ]] || { echo 'Expected exactly one package installer' >&2; exit 1; }
+        install_dir="$VLLM_ROOT/vllm_ascend/_cann_ops_$PACKAGE_VENDOR"
+        bash "${installers[0]}" "--install-path=$install_dir"
+        printf 'Installed explicit package: %s\n' "$install_dir"
+    )
+else
+    bash "$BUILD_ACLNN" "$VLLM_ROOT" "$SOC_VERSION"
+fi
 
 printf '\nBuild/install finished. Restart model workers before using the new version.\n'
 printf 'Verify that the build log includes %s for your target SoC.\n' "$OP_NAME"
