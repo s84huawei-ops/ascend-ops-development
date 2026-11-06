@@ -23,13 +23,16 @@ def main():
     binding = root/'csrc/torch_binding.cpp'
     original = binding.read_text()
     old_include = '#include "attention/lightning_indexer_vllm/lightning_indexer_vllm_torch_adpt.h"'
-    new_include = '#include "attention/lightning_indexer/lightning_indexer_torch_adpt.h"'
+    plain_include = '#include "attention/lightning_indexer/lightning_indexer_torch_adpt.h"'
+    new_include = '#define LI_EXPLICIT_OPAPI_ROUTING\n'+plain_include+'\n#undef LI_EXPLICIT_OPAPI_ROUTING'
     old_registration = '&vllm_ascend::npu_lightning_indexer);'
     new_registration = '&vllm_ascend::npu_lightning_indexer_tensor_only);'
     if original.count(old_include) == 1 and original.count(old_registration) == 1:
         changed = original.replace(old_include,new_include).replace(old_registration,new_registration)
     elif original.count(new_include) == 1 and original.count(new_registration) == 1:
         changed = original
+    elif original.count(plain_include) == 1 and original.count(new_registration) == 1:
+        changed = original.replace(plain_include,new_include)
     else:
         raise RuntimeError('Unexpected vLLM indexer binding; inspect its schema before adapting it')
     backup.mkdir(parents=True,exist_ok=False)

@@ -144,9 +144,11 @@ def main():
         env['TASK_QUEUE_ENABLE'] = '0'
         env.pop('LD_PRELOAD',None)
         env.pop('ASCEND_CUSTOM_OPP_PATH',None)
+        env.pop('LIGHTNING_INDEXER_OPAPI_LIBRARY',None)
         if label == 'custom':
             env['ASCEND_CUSTOM_OPP_PATH'] = str(args.vendor_dir)
-            env['LD_LIBRARY_PATH'] = str(args.vendor_dir/'op_api/lib')+':'+env.get('LD_LIBRARY_PATH','')
+            if args.backend == 'vllm':
+                env['LIGHTNING_INDEXER_OPAPI_LIBRARY'] = str(args.vendor_dir/'op_api/lib/libcust_opapi.so')
         command = [sys.executable,str(Path(__file__).resolve()),'--vendor-dir',str(args.vendor_dir),
                    '--device',str(args.device),'--sequence',str(args.sequence),'--seed',str(args.seed),
                    '--output',str(args.output),'--_worker',label]

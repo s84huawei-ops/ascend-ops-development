@@ -203,6 +203,8 @@ fi
 if [[ "$WIRE_TORCH_ADAPTER" == 1 ]]; then
     "$PYTHON" "$FRAMEWORK_ROOT/scripts/python/wire_li_torch_adapter.py" \
         --vllm-root "$VLLM_ROOT" --backup-dir "$BACKUP_DIR/torch-adapter" --soc "$SOC_VERSION"
+    printf 'For indexer benchmark workers: export LIGHTNING_INDEXER_OPAPI_LIBRARY=%q\n' \
+        "$VLLM_ROOT/vllm_ascend/_cann_ops_$PACKAGE_VENDOR/vendors/${PACKAGE_VENDOR}_transformer/op_api/lib/libcust_opapi.so"
 fi
 
 printf '\nBuild/install finished. Restart model workers before using the new version.\n'
