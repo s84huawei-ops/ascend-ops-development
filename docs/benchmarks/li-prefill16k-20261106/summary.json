@@ -50,6 +50,8 @@
     "missing_activation_rejected": true,
     "runtime_soc": "Ascend910B2",
     "cann_version": "9.0.0",
-    "ascend910c_runtime_tested": false
+    "ascend910c_runtime_tested": false,
+    "poisoned_outputs_and_clean_scratch_passed": true,
+    "post_timing_candidate_check_passed": true
   }
 }

@@ -54,6 +54,9 @@ PyTorch 2.10.0+cpu, and torch-npu 2.10.0:
 - Thirteen exact index/value cases cover 16k prefill, odd tails, split-core
   boundaries, zero-weight ties, BSND, TND, paged KV, two TND batches, small
   queries, 32 heads, top-1024, FP16, and FP32 weights.
+  The final repeat poisons indices/values before every checked launch, clears
+  scratch between lanes, and checks the candidate again after timing. All
+  thirteen cases and the poisoned-output ACLNN package check passed.
 - Both initialized-weight blocks preserve exact indices and hidden states.
 - The isolated ACLNN package was built/installed and matched a native reference
   produced in a separate process without custom-op activation.
