@@ -103,7 +103,19 @@ def worker(args):
         print('NATIVE_REFERENCE_SAVED',flush=True)
     else:
         output = torch.empty(1,args.sequence,1,2048,dtype=torch.int32,device=device)
-        metadata.update(custom_call(torch,args.vendor_dir,query,key,weights,lengths,output))
+        if args.backend == 'aclnn':
+            metadata.update(custom_call(torch,args.vendor_dir,query,key,weights,lengths,output))
+        else:
+            from vllm_ascend.utils import enable_custom_op
+            assert enable_custom_op(), 'vLLM custom operators are unavailable'
+            operation = torch.ops._C_ascend.npu_lightning_indexer
+            output = operation(query,key,weights,actual_seq_lengths_query=lengths,
+                actual_seq_lengths_key=lengths,block_table=None,layout_query='BSND',
+                layout_key='BSND',sparse_count=2048,sparse_mode=3)
+            assert isinstance(output,torch.Tensor), 'The vLLM tensor-only interface changed'
+            torch.npu.synchronize(device)
+            metadata['schema'] = str(operation._schemas)
+        metadata['backend'] = args.backend
         expected = torch.load(args.output/'native-indices.pt',map_location='cpu',weights_only=True)
         assert torch.equal(output.cpu(),expected), 'Installed package differs from native'
         metadata.update(exact_indices=True,complete=True)
@@ -118,6 +130,7 @@ def main():
     parser.add_argument('--sequence',type=int,required=True)
     parser.add_argument('--seed',type=int,required=True)
     parser.add_argument('--output',type=Path,required=True)
+    parser.add_argument('--backend',choices=('aclnn','vllm'),default='aclnn')
     parser.add_argument('--_worker',choices=('native','custom'),help=argparse.SUPPRESS)
     args = parser.parse_args()
     args.vendor_dir = args.vendor_dir.resolve()
@@ -137,6 +150,7 @@ def main():
         command = [sys.executable,str(Path(__file__).resolve()),'--vendor-dir',str(args.vendor_dir),
                    '--device',str(args.device),'--sequence',str(args.sequence),'--seed',str(args.seed),
                    '--output',str(args.output),'--_worker',label]
+        command.extend(['--backend',args.backend])
         with (args.output/(label+'.log')).open('x') as log:
             subprocess.run(command,env=env,stdout=log,stderr=subprocess.STDOUT,check=True)
     print('RESULT',args.output/'custom.json',flush=True)
