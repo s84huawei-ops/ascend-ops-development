@@ -7,8 +7,10 @@ set -euo pipefail
 SOC_OVERRIDE=""
 PACKAGE_OPS=""
 PACKAGE_VENDOR=""
+WIRE_TORCH_ADAPTER=0
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        --torch-adapter) WIRE_TORCH_ADAPTER=1; shift ;;
         --soc|--package-ops|--vendor)
             [[ $# -ge 2 && -n "$2" && "$2" != --* ]] || { echo "Missing value for $1" >&2; exit 2; }
             case "$1" in
@@ -18,7 +20,7 @@ while [[ $# -gt 0 ]]; do
             esac
             shift 2 ;;
         --help)
-            echo 'Usage: build_operator_fixed.sh [--soc SOC] [--package-ops "op;dependency;..."] [--vendor NAME]'
+            echo 'Usage: build_operator_fixed.sh [--soc SOC] [--package-ops "op;dependency;..."] [--vendor NAME] [--torch-adapter]'
             echo 'An explicit package list requires a vendor and installs to _cann_ops_NAME.'
             exit 0 ;;
         *) echo "Unknown argument: $1" >&2; exit 2 ;;
@@ -29,6 +31,10 @@ if [[ -n "$PACKAGE_OPS" || -n "$PACKAGE_VENDOR" ]]; then
         echo 'Specify both --package-ops and a valid --vendor name' >&2; exit 2;
     }
 fi
+if [[ "$WIRE_TORCH_ADAPTER" == 1 && -z "$PACKAGE_OPS" ]]; then
+    echo '--torch-adapter requires an explicit package list and vendor' >&2; exit 2
+fi
+FRAMEWORK_ROOT=$PWD
 
 # Run from the project directory containing op-src/. This is trusted Bash config.
 CONFIG_FILE="$PWD/op-src/builder.env"
@@ -192,6 +198,11 @@ if [[ -n "$PACKAGE_OPS" ]]; then
     )
 else
     bash "$BUILD_ACLNN" "$VLLM_ROOT" "$SOC_VERSION"
+fi
+
+if [[ "$WIRE_TORCH_ADAPTER" == 1 ]]; then
+    "$PYTHON" "$FRAMEWORK_ROOT/scripts/python/wire_li_torch_adapter.py" \
+        --vllm-root "$VLLM_ROOT" --backup-dir "$BACKUP_DIR/torch-adapter" --soc "$SOC_VERSION"
 fi
 
 printf '\nBuild/install finished. Restart model workers before using the new version.\n'
