@@ -8,19 +8,21 @@ SOC_OVERRIDE=""
 PACKAGE_OPS=""
 PACKAGE_VENDOR=""
 WIRE_TORCH_ADAPTER=0
+TORCH_SOC=""
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --torch-adapter) WIRE_TORCH_ADAPTER=1; shift ;;
-        --soc|--package-ops|--vendor)
+        --soc|--torch-soc|--package-ops|--vendor)
             [[ $# -ge 2 && -n "$2" && "$2" != --* ]] || { echo "Missing value for $1" >&2; exit 2; }
             case "$1" in
                 --soc) SOC_OVERRIDE=$2 ;;
+                --torch-soc) TORCH_SOC=$2 ;;
                 --package-ops) PACKAGE_OPS=$2 ;;
                 --vendor) PACKAGE_VENDOR=$2 ;;
             esac
             shift 2 ;;
         --help)
-            echo 'Usage: build_operator_fixed.sh [--soc SOC] [--package-ops "op;dependency;..."] [--vendor NAME] [--torch-adapter]'
+            echo 'Usage: build_operator_fixed.sh [--soc FAMILY] [--package-ops "op;dependency;..."] [--vendor NAME] [--torch-adapter --torch-soc CONCRETE_SOC]'
             echo 'An explicit package list requires a vendor and installs to _cann_ops_NAME.'
             exit 0 ;;
         *) echo "Unknown argument: $1" >&2; exit 2 ;;
@@ -31,8 +33,8 @@ if [[ -n "$PACKAGE_OPS" || -n "$PACKAGE_VENDOR" ]]; then
         echo 'Specify both --package-ops and a valid --vendor name' >&2; exit 2;
     }
 fi
-if [[ "$WIRE_TORCH_ADAPTER" == 1 && -z "$PACKAGE_OPS" ]]; then
-    echo '--torch-adapter requires an explicit package list and vendor' >&2; exit 2
+if [[ "$WIRE_TORCH_ADAPTER" == 1 && ( -z "$PACKAGE_OPS" || -z "$TORCH_SOC" ) ]]; then
+    echo '--torch-adapter requires --package-ops, --vendor, and --torch-soc (for example ascend910b2)' >&2; exit 2
 fi
 FRAMEWORK_ROOT=$PWD
 
@@ -51,6 +53,9 @@ source "$CONFIG_FILE"
 [[ -n "${SOC_ARG:-}" ]] || { echo "SOC_ARG is missing or empty in $CONFIG_FILE" >&2; exit 1; }
 if [[ -n "$SOC_OVERRIDE" ]]; then
     SOC_ARG=$SOC_OVERRIDE
+fi
+if [[ "$WIRE_TORCH_ADAPTER" == 1 && "$TORCH_SOC" != "$SOC_ARG"* ]]; then
+    echo "Torch target '$TORCH_SOC' does not match package family '$SOC_ARG'" >&2; exit 2
 fi
 if [[ -n "$PACKAGE_OPS" && ";$PACKAGE_OPS;" != *";$OP_NAME;"* ]]; then
     echo "The explicit package list must include OP_NAME '$OP_NAME'" >&2; exit 2
@@ -202,7 +207,7 @@ fi
 
 if [[ "$WIRE_TORCH_ADAPTER" == 1 ]]; then
     "$PYTHON" "$FRAMEWORK_ROOT/scripts/python/wire_li_torch_adapter.py" \
-        --vllm-root "$VLLM_ROOT" --backup-dir "$BACKUP_DIR/torch-adapter" --soc "$SOC_VERSION"
+        --vllm-root "$VLLM_ROOT" --backup-dir "$BACKUP_DIR/torch-adapter" --soc "$TORCH_SOC"
     printf 'For indexer benchmark workers: export LIGHTNING_INDEXER_OPAPI_LIBRARY=%q\n' \
         "$VLLM_ROOT/vllm_ascend/_cann_ops_$PACKAGE_VENDOR/vendors/${PACKAGE_VENDOR}_transformer/op_api/lib/libcust_opapi.so"
 fi

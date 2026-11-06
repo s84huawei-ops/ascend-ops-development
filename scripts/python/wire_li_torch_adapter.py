@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
@@ -14,8 +15,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--vllm-root',type=Path,required=True)
     parser.add_argument('--backup-dir',type=Path,required=True)
-    parser.add_argument('--soc',choices=('ascend910b','ascend910_93'),required=True)
+    parser.add_argument('--soc',type=str.lower,required=True,
+                        help='Concrete CANN SoC, e.g. ascend910b2 or ascend910_9391')
     args = parser.parse_args()
+    if not re.fullmatch(r'ascend910b[1-4](?:c|-[1-4])?|ascend910_93[0-9]{2}',args.soc):
+        parser.error('--soc must be a concrete CANN SoC; a package family such as ascend910b selects the wrong architecture')
     root = args.vllm_root.resolve()
     backup = args.backup_dir.resolve()
     adapter = root/'csrc/attention/lightning_indexer/lightning_indexer_torch_adpt.h'
