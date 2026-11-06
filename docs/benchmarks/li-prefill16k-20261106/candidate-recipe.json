@@ -1,0 +1,224 @@
+{
+  "source_dir": "/workspace/stan-li-prefill16k/op-src/lightning_indexer/op_kernel",
+  "source_hashes": {
+    "arch22/lightning_indexer_kernel.h": "a5b154e15dd99a58f4071d941b3d73289b1e53d514a707c91e70ca206e875da9",
+    "arch22/lightning_indexer_service_cube.h": "77b89814d56c2bbb51649821da2f90019be9d59a8a7efe36f6e1d261320b00cd",
+    "arch22/lightning_indexer_service_vector.h": "c46ed1573293b3764a7d677fd4c08931ed5697edffee5d336a4a1a0c1e2a3e73",
+    "arch22/lightning_indexer_vector.h": "301faaab329f64648e0ec8a93f69e6f1ed5ba8dd067e8b46f7d751f5f54ab267",
+    "arch22/lightning_indexer_weight_cache.h": "74dd3650897a62c47aad41e06d759b30fb3dd85f3d6a4fff48e1d516a7217206",
+    "arch35/lightning_indexer_kernel.h": "f0a9480c7f6a78618dd3b27a83246bdd3addb1d85a27f1a90d2b403c79be174b",
+    "arch35/lightning_indexer_service_cube.h": "8aa4823c9631de541b1f728b696204ea892ffb8ec68623ed80ee356480b68121",
+    "arch35/lightning_indexer_service_vector.h": "bf9f4aae92041f3b300e64646f6261dfe1da53799944dc4ab13a00ead5966fa6",
+    "arch35/vf/lightning_indexer_topk.h": "06f83b05f1b879793089cdc9d2f8a865abdace88306f4eae6f4f723c27f60bce",
+    "arch35/vf/lightning_indexer_vector1.h": "f35a4deea49ac37792e87191af5aa4f9e1d54e5b9702889e339aa10d439e8a7e",
+    "arch35/vf/vf_topk.h": "b997f365c2730cafbe5e672944e08068ce74918e508fc54fbaa6fec58d5425a4",
+    "arch35/vf/vf_topk_16_gather.h": "6d1ceb35e2e9d7a9f961ab42043ce0f2bce2cd84adba447a130fb6e9e1d2a641",
+    "lightning_indexer.cpp": "8daa3ec56a041f7d8de241be7d2ff928a8498a97b9a453a74368b96404e8b271",
+    "lightning_indexer_common.h": "f3971bd6094ce60c1e2279cf9b09b5bbb800b11d27489c1e35869ab9625b17c1",
+    "lightning_indexer_template_tiling_key.h": "f4e7b753644d567c95c2fe8a8db3e785878e9021e1aabfac2beb45c3e969d70f"
+  },
+  "soc": "Ascend910B2",
+  "metadata": "/usr/local/Ascend/cann-9.0.0/opp/built-in/op_impl/ai_core/tbe/kernel/ascend910b/ops_transformer/lightning_indexer/LightningIndexer_2517851d7f53b28f971ff94bfa4b7037.json",
+  "metadata_sha256": "792d3aedb8bd274d99d82b9e5fbfab03f8e3da7847e672016559b26e17d6eabf",
+  "recipe": "/usr/local/Ascend/cann-9.0.0/opp/built-in/op_impl/ai_core/tbe/impl/ops_transformer/dynamic/lightning_indexer.py",
+  "options": [
+    "-DDTYPE_QUERY=bfloat16_t",
+    "-DORIG_DTYPE_QUERY=DT_BF16",
+    "-DFORMAT_QUERY=FORMAT_ND",
+    "-DDTYPE_KEY=bfloat16_t",
+    "-DORIG_DTYPE_KEY=DT_BF16",
+    "-DFORMAT_KEY=FORMAT_ND",
+    "-DDTYPE_WEIGHTS=bfloat16_t",
+    "-DORIG_DTYPE_WEIGHTS=DT_BF16",
+    "-DFORMAT_WEIGHTS=FORMAT_ND",
+    "-DDTYPE_ACTUAL_SEQ_LENGTHS_QUERY=int32_t",
+    "-DORIG_DTYPE_ACTUAL_SEQ_LENGTHS_QUERY=DT_INT32",
+    "-DFORMAT_ACTUAL_SEQ_LENGTHS_QUERY=FORMAT_ND",
+    "-DDTYPE_ACTUAL_SEQ_LENGTHS_KEY=int32_t",
+    "-DORIG_DTYPE_ACTUAL_SEQ_LENGTHS_KEY=DT_INT32",
+    "-DFORMAT_ACTUAL_SEQ_LENGTHS_KEY=FORMAT_ND",
+    "-DDTYPE_BLOCK_TABLE=int32_t",
+    "-DORIG_DTYPE_BLOCK_TABLE=DT_INT32",
+    "-DFORMAT_BLOCK_TABLE=FORMAT_ND",
+    "-DDTYPE_SPARSE_INDICES=int32_t",
+    "-DORIG_DTYPE_SPARSE_INDICES=DT_INT32",
+    "-DFORMAT_SPARSE_INDICES=FORMAT_ND",
+    "-DDTYPE_SPARSE_VALUES=bfloat16_t",
+    "-DORIG_DTYPE_SPARSE_VALUES=DT_BF16",
+    "-DFORMAT_SPARSE_VALUES=FORMAT_ND",
+    "-x",
+    "cce",
+    "-I/usr/local/Ascend/cann-9.0.0/tikcpp",
+    "-I/usr/local/Ascend/cann-9.0.0/tikcpp/../../include",
+    "-I/usr/local/Ascend/cann-9.0.0/tikcpp/tikcfw",
+    "-I/usr/local/Ascend/cann-9.0.0/tikcpp/tikcfw/impl",
+    "-I/usr/local/Ascend/cann-9.0.0/tikcpp/tikcfw/interface",
+    "-I/usr/local/Ascend/cann-9.0.0/tikcpp/../ascendc/act",
+    "-I/usr/local/Ascend/cann-9.0.0/opp/built-in/op_impl/ai_core/tbe/impl/ops_transformer/dynamic/../ascendc/common",
+    "-I/usr/local/Ascend/cann-9.0.0/aarch64-linux/asc/atcos",
+    "-I/usr/local/Ascend/cann-9.0.0/aarch64-linux/pkg_inc/op_common",
+    "-DHIGH_PERFORMANCE=1",
+    "-DDETERMINISTIC_MODE=0",
+    "-DNOT_DYNAMIC_COMPILE",
+    "--cce-auto-sync=off",
+    "-Wno-deprecated-declarations",
+    "-Werror",
+    "-mllvm",
+    "-cce-vf-remove-membar=false",
+    "-mllvm",
+    "-cce-aicore-hoist-movemask=false",
+    "-O3",
+    "-g",
+    "--cce-auto-sync=off"
+  ],
+  "op_compile_option": {
+    "auto_sync": false
+  },
+  "support_info": {
+    "implMode": "high_performance",
+    "int64Mode": false,
+    "simplifiedKeyMode": 0,
+    "simplifiedKey": [
+      "LightningIndexer/d=0,p=1/27,2/27,2/27,2/3,2/27,2",
+      "LightningIndexer/d=0,p=0/27,2/27,2/27,2/3,2/27,2",
+      "LightningIndexer/d=1,p=1/27,2/27,2/27,2/3,2/27,2",
+      "LightningIndexer/d=1,p=0/27,2/27,2/27,2/3,2/27,2"
+    ],
+    "optionalInputMode": "gen_placeholder",
+    "optionalOutputMode": "gen_placeholder",
+    "staticKey": "7ccae3bd007e77400769169e527805c25770af3db3ca0950a0a556891bf470d5,61f9c5ad3947b4181be878afcca84d7e09d91135caff5773eb491e28b74469ca",
+    "inputs": [
+      {
+        "name": "query",
+        "index": 0,
+        "dtype": "bfloat16",
+        "format": "ND",
+        "paramType": "required",
+        "shape": [
+          -2
+        ],
+        "format_match_mode": "FormatAgnostic"
+      },
+      {
+        "name": "key",
+        "index": 1,
+        "dtype": "bfloat16",
+        "format": "ND",
+        "paramType": "required",
+        "shape": [
+          -2
+        ],
+        "format_match_mode": "FormatAgnostic"
+      },
+      {
+        "name": "weights",
+        "index": 2,
+        "dtype": "bfloat16",
+        "format": "ND",
+        "paramType": "required",
+        "shape": [
+          -2
+        ],
+        "format_match_mode": "FormatAgnostic"
+      },
+      {
+        "name": "actual_seq_lengths_query",
+        "index": 3,
+        "dtype": "int32",
+        "format": "ND",
+        "paramType": "optional",
+        "shape": [
+          -2
+        ],
+        "format_match_mode": "FormatAgnostic"
+      },
+      {
+        "name": "actual_seq_lengths_key",
+        "index": 4,
+        "dtype": "int32",
+        "format": "ND",
+        "paramType": "optional",
+        "shape": [
+          -2
+        ],
+        "format_match_mode": "FormatAgnostic"
+      },
+      {
+        "name": "block_table",
+        "index": 5,
+        "dtype": "int32",
+        "format": "ND",
+        "paramType": "optional",
+        "shape": [
+          -2
+        ],
+        "format_match_mode": "FormatAgnostic"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "sparse_indices",
+        "index": 0,
+        "dtype": "int32",
+        "format": "ND",
+        "paramType": "required",
+        "shape": [
+          -2
+        ],
+        "format_match_mode": "FormatAgnostic"
+      },
+      {
+        "name": "sparse_values",
+        "index": 1,
+        "dtype": "bfloat16",
+        "format": "ND",
+        "paramType": "required",
+        "shape": [
+          -2
+        ],
+        "format_match_mode": "FormatAgnostic"
+      }
+    ],
+    "attrs": [
+      {
+        "name": "layout_query",
+        "dtype": "str",
+        "value": ""
+      },
+      {
+        "name": "layout_key",
+        "dtype": "str",
+        "value": ""
+      },
+      {
+        "name": "sparse_count",
+        "dtype": "int",
+        "value": 0
+      },
+      {
+        "name": "sparse_mode",
+        "dtype": "int",
+        "value": 0
+      },
+      {
+        "name": "pre_tokens",
+        "dtype": "int",
+        "value": 0
+      },
+      {
+        "name": "next_tokens",
+        "dtype": "int",
+        "value": 0
+      },
+      {
+        "name": "return_values",
+        "dtype": "bool",
+        "value": false
+      }
+    ],
+    "opMode": "dynamic",
+    "deterministic": "ignore"
+  },
+  "code_channel": 0,
+  "compiler_version": "2026-04-25T15:46:25+08:00 clang version 15.0.5 (clang-5c68a1cb1231 flang-5c68a1cb1231)\nTarget: aarch64-unknown-linux-gnu\nThread model: posix\nInstalledDir: /usr/local/Ascend/cann-9.0.0/bin\n"
+}

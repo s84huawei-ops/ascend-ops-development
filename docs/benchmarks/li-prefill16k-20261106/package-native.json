@@ -1,0 +1,8 @@
+{
+  "device": 5,
+  "device_name": "Ascend910B2",
+  "seed": 20261106,
+  "sequence": 16384,
+  "torch_version": "2.10.0+cpu",
+  "torch_npu_version": "2.10.0"
+}

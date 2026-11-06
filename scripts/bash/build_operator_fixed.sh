@@ -36,6 +36,9 @@ fi
 if [[ "$WIRE_TORCH_ADAPTER" == 1 && ( -z "$PACKAGE_OPS" || -z "$TORCH_SOC" ) ]]; then
     echo '--torch-adapter requires --package-ops, --vendor, and --torch-soc (for example ascend910b2)' >&2; exit 2
 fi
+if [[ "$WIRE_TORCH_ADAPTER" == 0 && -n "$TORCH_SOC" ]]; then
+    echo '--torch-soc requires --torch-adapter' >&2; exit 2
+fi
 FRAMEWORK_ROOT=$PWD
 
 # Run from the project directory containing op-src/. This is trusted Bash config.
@@ -94,6 +97,13 @@ VLLM_ROOT=$(cd -- "$DST_PARENT/../.." && pwd -P)
 [[ -f "$VLLM_ROOT/setup.py" && -f "$VLLM_ROOT/csrc/build_aclnn.sh" ]] || {
     echo "Missing vLLM-Ascend setup.py or csrc/build_aclnn.sh in $VLLM_ROOT" >&2; exit 1;
 }
+if [[ -z "$PACKAGE_OPS" && "$OP_NAME" == lightning_indexer ]] &&
+   grep -Fq '"lightning_indexer_vllm"' "$VLLM_ROOT/csrc/build_aclnn.sh" &&
+   ! grep -Fq '"lightning_indexer"' "$VLLM_ROOT/csrc/build_aclnn.sh"; then
+    echo 'This vLLM build list selects lightning_indexer_vllm, not op-src/lightning_indexer.' >&2
+    echo 'Use --package-ops with lightning_indexer and its metadata dependencies; see docs/STAN_LI_OPTIMIZATION.md.' >&2
+    exit 2
+fi
 command -v "$PYTHON" >/dev/null
 
 # Copy directory CONTENTS (including hidden files), not a nested SRC_DIR directory.

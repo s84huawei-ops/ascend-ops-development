@@ -1,0 +1,201 @@
+{
+  "config": {
+    "hidden": 7168,
+    "intermediate": 18432,
+    "heads": 128,
+    "q_rank": 1536,
+    "kv_rank": 512,
+    "nope": 128,
+    "rope": 64,
+    "value": 128,
+    "index_heads": 64,
+    "index_dim": 128,
+    "topk": 2048,
+    "sequence": 16384,
+    "dtype": "bfloat16",
+    "batch": 1,
+    "epsilon": 1e-06,
+    "rope_factor": 40,
+    "rope_theta": 10000,
+    "original_sequence": 4096
+  },
+  "args": {
+    "device": 5,
+    "variant": "source_candidate",
+    "warmups": 12,
+    "repeats": 8,
+    "rounds": 2
+  },
+  "identity": {
+    "elf": "/home/giraffe/ascendc-study/stan-li-prefill16k/build/paired/kernel_meta/LightningIndexer_2517851d7f53b28f971ff94bfa4b7037.o",
+    "sha256": "6b1129ba3e3fc3b35ddc7198701e3e7287a05d25efa337e418387a67a6ec0339",
+    "source_hashes": {
+      "arch22/lightning_indexer_kernel.h": "a5b154e15dd99a58f4071d941b3d73289b1e53d514a707c91e70ca206e875da9",
+      "arch22/lightning_indexer_paired_merge.h": "f7fe4212dda263b16b38ff5317a6cbee5537dd35eabbe394532008515bf152c3",
+      "arch22/lightning_indexer_service_cube.h": "77b89814d56c2bbb51649821da2f90019be9d59a8a7efe36f6e1d261320b00cd",
+      "arch22/lightning_indexer_service_vector.h": "54d993f3183028ecb8a049be25663e4eeb2410b82b54dfadfb0a47a8cf848b00",
+      "arch22/lightning_indexer_vector.h": "301faaab329f64648e0ec8a93f69e6f1ed5ba8dd067e8b46f7d751f5f54ab267",
+      "arch22/lightning_indexer_weight_cache.h": "74dd3650897a62c47aad41e06d759b30fb3dd85f3d6a4fff48e1d516a7217206",
+      "arch35/lightning_indexer_kernel.h": "f0a9480c7f6a78618dd3b27a83246bdd3addb1d85a27f1a90d2b403c79be174b",
+      "arch35/lightning_indexer_service_cube.h": "8aa4823c9631de541b1f728b696204ea892ffb8ec68623ed80ee356480b68121",
+      "arch35/lightning_indexer_service_vector.h": "bf9f4aae92041f3b300e64646f6261dfe1da53799944dc4ab13a00ead5966fa6",
+      "arch35/vf/lightning_indexer_topk.h": "06f83b05f1b879793089cdc9d2f8a865abdace88306f4eae6f4f723c27f60bce",
+      "arch35/vf/lightning_indexer_vector1.h": "f35a4deea49ac37792e87191af5aa4f9e1d54e5b9702889e339aa10d439e8a7e",
+      "arch35/vf/vf_topk.h": "b997f365c2730cafbe5e672944e08068ce74918e508fc54fbaa6fec58d5425a4",
+      "arch35/vf/vf_topk_16_gather.h": "6d1ceb35e2e9d7a9f961ab42043ce0f2bce2cd84adba447a130fb6e9e1d2a641",
+      "lightning_indexer.cpp": "8daa3ec56a041f7d8de241be7d2ff928a8498a97b9a453a74368b96404e8b271",
+      "lightning_indexer_common.h": "f3971bd6094ce60c1e2279cf9b09b5bbb800b11d27489c1e35869ab9625b17c1",
+      "lightning_indexer_template_tiling_key.h": "f4e7b753644d567c95c2fe8a8db3e785878e9021e1aabfac2beb45c3e969d70f"
+    },
+    "soc": "Ascend910B2"
+  },
+  "git_commit": "5e45c626743f0d0630a5421bf4a010d08afa8efc",
+  "weights": "deterministic initialized BF16, no pretrained checkpoint",
+  "scope": "full dense DSA block: RMSNorm, MLA and index projections, YaRN RoPE, BF16 Hadamard rotation, indexer, absorbed sparse attention, output projection, residual, RMSNorm, SwiGLU FFN, residual",
+  "exact_indices": true,
+  "exact_hidden_states": true,
+  "results": {
+    "1": {
+      "native": [
+        [
+          177.6922149658203,
+          176.99334716796875,
+          177.9040985107422,
+          176.01565551757812,
+          177.59840393066406,
+          175.7736053466797,
+          176.63955688476562,
+          176.46600341796875
+        ],
+        [
+          176.9934539794922,
+          176.80606079101562,
+          177.2989044189453,
+          176.52879333496094,
+          176.81341552734375,
+          176.75221252441406,
+          176.67816162109375,
+          177.1932830810547
+        ]
+      ],
+      "custom": [
+        [
+          173.5107421875,
+          172.55389404296875,
+          173.94747924804688,
+          173.88418579101562,
+          173.35647583007812,
+          173.4687957763672,
+          172.09283447265625,
+          173.49151611328125
+        ],
+        [
+          173.789794921875,
+          173.7186737060547,
+          173.2381591796875,
+          172.4937744140625,
+          173.77569580078125,
+          173.61212158203125,
+          173.25927734375,
+          174.0961151123047
+        ]
+      ],
+      "profile": {
+        "native": {
+          "indexer_us": [
+            18023.08,
+            17924.358
+          ],
+          "kernel_sum_us": 175806.0029999999,
+          "kernel_count": 91,
+          "csv": "/home/giraffe/ascendc-study/stan-li-prefill16k/layer-candidate/profiles/layers-source_candidate-20261106-144700/1-native/def9e3d716c3_10612_20261106144716929_ascend_pt/ASCEND_PROFILER_OUTPUT/kernel_details.csv"
+        },
+        "custom": {
+          "indexer_us": [
+            14290.825,
+            14603.332
+          ],
+          "kernel_sum_us": 173242.49149999992,
+          "kernel_count": 91,
+          "csv": "/home/giraffe/ascendc-study/stan-li-prefill16k/layer-candidate/profiles/layers-source_candidate-20261106-144700/1-custom/def9e3d716c3_10612_20261106144725153_ascend_pt/ASCEND_PROFILER_OUTPUT/kernel_details.csv"
+        }
+      },
+      "native_median_ms": 176.8097381591797,
+      "custom_median_ms": 173.50112915039062,
+      "speedup": 1.0190696684510978
+    },
+    "2": {
+      "native": [
+        [
+          350.7579345703125,
+          352.4351501464844,
+          354.4619140625,
+          350.9756164550781,
+          351.4391174316406,
+          351.455810546875,
+          351.4552307128906,
+          352.62237548828125
+        ],
+        [
+          352.498779296875,
+          353.41424560546875,
+          353.1058654785156,
+          349.53912353515625,
+          351.6919860839844,
+          352.4222412109375,
+          351.6874694824219,
+          352.0013732910156
+        ]
+      ],
+      "custom": [
+        [
+          345.68060302734375,
+          345.8924865722656,
+          345.736083984375,
+          346.5303039550781,
+          344.2355651855469,
+          345.330810546875,
+          346.8110656738281,
+          345.5111083984375
+        ],
+        [
+          345.19537353515625,
+          347.0697326660156,
+          344.23699951171875,
+          346.62322998046875,
+          346.92742919921875,
+          345.233154296875,
+          347.990966796875,
+          345.2976989746094
+        ]
+      ],
+      "profile": {
+        "native": {
+          "indexer_us": [
+            17977.259,
+            17949.138,
+            17998.859,
+            17925.458
+          ],
+          "kernel_sum_us": 351503.0525,
+          "kernel_count": 182,
+          "csv": "/home/giraffe/ascendc-study/stan-li-prefill16k/layer-candidate/profiles/layers-source_candidate-20261106-144700/2-native/def9e3d716c3_10612_20261106144802430_ascend_pt/ASCEND_PROFILER_OUTPUT/kernel_details.csv"
+        },
+        "custom": {
+          "indexer_us": [
+            14516.11,
+            14203.424,
+            14374.787,
+            14675.253
+          ],
+          "kernel_sum_us": 345282.0385000003,
+          "kernel_count": 182,
+          "csv": "/home/giraffe/ascendc-study/stan-li-prefill16k/layer-candidate/profiles/layers-source_candidate-20261106-144700/2-custom/def9e3d716c3_10612_20261106144812028_ascend_pt/ASCEND_PROFILER_OUTPUT/kernel_details.csv"
+        }
+      },
+      "native_median_ms": 351.8466796875,
+      "custom_median_ms": 345.7083435058594,
+      "speedup": 1.0177558230715267
+    }
+  }
+}

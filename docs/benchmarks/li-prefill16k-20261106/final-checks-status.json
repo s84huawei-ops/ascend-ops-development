@@ -1,0 +1,8 @@
+{
+  "state": "complete",
+  "jobs": {
+    "layer-baseline": 0,
+    "layer-candidate": 0,
+    "package-validation": 0
+  }
+}
