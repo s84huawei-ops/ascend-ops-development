@@ -96,20 +96,33 @@ modified `builder.env` were preserved; development used the independent checkout
 
 ## Build on the deployment server
 
+The deployment environment is confirmed as package family `ascend910_93`
+with CANN 9.0.0. The concrete chip SKU has not been confirmed; `Ascend910_9391`
+was the development cross-compilation target, not an identification of the
+deployment hardware.
+
 Run inside the target container from the framework checkout root. Ensure
-`op-src/builder.env` points `DST_DIR` at the local vLLM source tree. The example
-uses the 910C package family and concrete `ascend910_9391` SKU; select the
-concrete SKU supported by the deployment server and its CANN installation.
+`op-src/builder.env` points `DST_DIR` at the local vLLM source tree. Query the
+concrete SoC from the target runtime with
+[`acl.get_soc_name()`](https://www.hiascend.com/document/detail/zh/Atlas200IDKA2DeveloperKit/23.0.RC2/Application%20Development%20Guide/aadgp/aclpythondevg_0062.html),
+then pass its lowercase name to the Torch build. This avoids assuming a SKU
+from the package-family name. Run the query on the deployment server.
 
 ```bash
 source /usr/local/Ascend/ascend-toolkit/set_env.sh
+TORCH_SOC="$(python3 -c 'import acl; print(acl.get_soc_name().lower())')"
+printf 'Concrete Torch compiler target: %s\n' "$TORCH_SOC"
 export MAX_JOBS=8
 bash scripts/bash/build_operator_fixed.sh \
   --soc ascend910_93 \
   --package-ops 'lightning_indexer;quant_lightning_indexer_metadata;sparse_attn_sharedkv_metadata' \
   --vendor stan \
-  --torch-adapter --torch-soc ascend910_9391
+  --torch-adapter --torch-soc "$TORCH_SOC"
 ```
+
+If the query fails, inspect the target container's CANN/PyACL installation
+before building. The build helper requires a concrete SoC and rejects an empty
+value or a package-family name.
 
 For the tested 910B2 environment, use `--soc ascend910b` and
 `--torch-soc ascend910b2`. Package families and concrete compiler targets are
