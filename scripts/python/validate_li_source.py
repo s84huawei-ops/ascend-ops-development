@@ -127,6 +127,13 @@ def main():
         assert old_workspace
         direct.patch(72,old_workspace,workspace.data_ptr())
         for label, launch in (('baseline',direct.launch_reference),('candidate',direct.launch)):
+            # A missing output store must not inherit the native/previous lane's
+            # correct result. Give each checked launch identical clean scratch.
+            output[0].fill_(torch.iinfo(torch.int32).min)
+            if values:
+                output[1].fill_(float('nan'))
+            workspace.zero_()
+            torch.npu.synchronize(args.device)
             launch(stream)
             torch.npu.synchronize(args.device)
             assert torch.equal(output[0],expected_indices), f'{label}: indices differ for case {case_index}'
@@ -157,6 +164,12 @@ def main():
             case['median_ms'] = {label:statistics.median(t for row in rows for t in row)
                                  for label,rows in samples.items()}
             case['speedup'] = case['median_ms']['baseline']/case['median_ms']['candidate']
+            output[0].fill_(torch.iinfo(torch.int32).min)
+            workspace.zero_()
+            torch.npu.synchronize(args.device)
+            direct.launch(stream)
+            torch.npu.synchronize(args.device)
+            assert torch.equal(output[0],expected_indices), 'Candidate changed after timing'
         report['cases'].append(case)
         args.output.parent.mkdir(parents=True,exist_ok=True)
         args.output.write_text(json.dumps(report,indent=2))

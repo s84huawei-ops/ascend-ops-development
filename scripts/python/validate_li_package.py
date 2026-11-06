@@ -102,7 +102,8 @@ def worker(args):
         (args.output/'native.json').write_text(json.dumps(metadata,indent=2))
         print('NATIVE_REFERENCE_SAVED',flush=True)
     else:
-        output = torch.empty(1,args.sequence,1,2048,dtype=torch.int32,device=device)
+        output = torch.full((1,args.sequence,1,2048),torch.iinfo(torch.int32).min,
+                            dtype=torch.int32,device=device)
         if args.backend == 'aclnn':
             metadata.update(custom_call(torch,args.vendor_dir,query,key,weights,lengths,output))
         else:
