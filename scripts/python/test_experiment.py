@@ -1,5 +1,6 @@
 """CPU-only checks for the experiment interface and result interpretation."""
 import contextlib
+from datetime import timezone
 import io
 import json
 import os
@@ -29,6 +30,24 @@ class ExperimentTests(unittest.TestCase):
         self.assertEqual(cfg["name"], "exp")
         self.assertEqual(cfg["benchmark"], {"warmup": 5, "iterations": 7})
         self.assertEqual(cfg["profiling"]["backends"], [])
+
+    def test_missing_timezone_database_does_not_fail_configuration(self):
+        with patch.object(experiment, "ZoneInfo", side_effect=experiment.ZoneInfoNotFoundError("unavailable")), \
+             patch.object(experiment, "timezone_database_available", return_value=False):
+            cfg = self.config({})
+        self.assertEqual(cfg["timezone"], "Europe/Warsaw")
+
+    def test_missing_timezone_database_resolves_to_utc(self):
+        with patch.object(experiment, "ZoneInfo", side_effect=experiment.ZoneInfoNotFoundError("unavailable")), \
+             patch.object(experiment, "timezone_database_available", return_value=False):
+            resolved = experiment.resolve_timezone("Europe/Warsaw")
+        self.assertEqual(resolved, timezone.utc)
+
+    def test_invalid_timezone_name_is_rejected_when_database_is_available(self):
+        with patch.object(experiment, "ZoneInfo", side_effect=experiment.ZoneInfoNotFoundError("unavailable")), \
+             patch.object(experiment, "timezone_database_available", return_value=True):
+            with self.assertRaises(experiment.ZoneInfoNotFoundError):
+                experiment.resolve_timezone("Bad/Zone")
 
     def test_invalid_configs_are_rejected(self):
         for value in ({"name": "../outside"}, {"device": True}, {"benchmark": {"iterations": 0}},

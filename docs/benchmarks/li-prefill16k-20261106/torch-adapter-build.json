@@ -1,0 +1,15 @@
+{
+  "command": [
+    "/usr/local/python3.11.15/bin/python3",
+    "/vllm-workspace/vllm-ascend/build-backup.stan-torch-c220/build_extension_only.py"
+  ],
+  "compile_custom_kernels": 1,
+  "max_jobs": 8,
+  "soc": "ascend910b2",
+  "original_binding_sha256": "5b0b3891dd348a49943e3eaee5927b7b3ca8f491105453bce229edc29f665d82",
+  "patched_binding_sha256": "da5f00db42cda6525daa1c089a9a0101d90527907d7229ae78713deee464c5ae",
+  "adapter_sha256": "dcecb23ab281ca7ae359ca23f8968be0c2b1bcf95a07a6879be06abceff89e79",
+  "extension_sha256": {
+    "/vllm-workspace/vllm-ascend/vllm_ascend/vllm_ascend_C.cpython-311-aarch64-linux-gnu.so": "de131dc208367b6851fa75bb8264113c38c349edee5b94ec275ea929c188c827"
+  }
+}

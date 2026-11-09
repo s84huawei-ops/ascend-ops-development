@@ -1,0 +1,8 @@
+[
+  "docker",
+  "exec",
+  "stan_ascend_study",
+  "bash",
+  "-c",
+  "source /usr/local/Ascend/ascend-toolkit/set_env.sh && cd /workspace/stan-li-prefill16k && export MAX_JOBS=8 && bash scripts/bash/build_operator_fixed.sh --soc ascend910b --package-ops \"lightning_indexer;quant_lightning_indexer_metadata;sparse_attn_sharedkv_metadata\" --vendor stan"
+]

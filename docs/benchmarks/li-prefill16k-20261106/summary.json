@@ -1,0 +1,57 @@
+{
+  "weights_cache": {
+    "run_medians_ms": {
+      "baseline": [
+        17.984919548034668,
+        17.940990447998047,
+        17.94212055206299
+      ],
+      "candidate": [
+        15.810559749603271,
+        15.565769672393799,
+        15.520589828491211
+      ]
+    },
+    "median_of_medians_ms": {
+      "baseline": 17.94212055206299,
+      "candidate": 15.565769672393799
+    },
+    "speedup": 1.1526651704145214,
+    "latency_reduction_percent": 13.24453747133003
+  },
+  "paired_merge_and_cache": {
+    "run_medians_ms": {
+      "baseline": [
+        17.93966007232666,
+        17.951210021972656,
+        17.957149505615234
+      ],
+      "candidate": [
+        14.8749098777771,
+        14.913879871368408,
+        15.010079860687256
+      ]
+    },
+    "median_of_medians_ms": {
+      "baseline": 17.951210021972656,
+      "candidate": 14.913879871368408
+    },
+    "speedup": 1.2036579466108814,
+    "latency_reduction_percent": 16.919918751362683
+  },
+  "batch_matrix_cases": 13,
+  "cross_compile_soc": "Ascend910_9391",
+  "validation": {
+    "exact_source_matrix_cases": 13,
+    "exact_block_indices": true,
+    "exact_block_hidden_states": true,
+    "installed_aclnn_exact_indices": true,
+    "vllm_dispatch_exact_indices": true,
+    "missing_activation_rejected": true,
+    "runtime_soc": "Ascend910B2",
+    "cann_version": "9.0.0",
+    "ascend910c_runtime_tested": false,
+    "poisoned_outputs_and_clean_scratch_passed": true,
+    "post_timing_candidate_check_passed": true
+  }
+}

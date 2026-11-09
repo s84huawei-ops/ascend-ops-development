@@ -1,0 +1,7 @@
+{
+  "state": "complete",
+  "jobs": {
+    "source-poison": 0,
+    "package-poison": 0
+  }
+}

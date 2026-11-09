@@ -1,0 +1,14 @@
+{
+  "device": 5,
+  "device_name": "Ascend910B2",
+  "seed": 20261110,
+  "sequence": 16384,
+  "torch_version": "2.10.0+cpu",
+  "torch_npu_version": "2.10.0",
+  "library": "/vllm-workspace/vllm-ascend/vllm_ascend/_cann_ops_stan/vendors/stan_transformer/op_api/lib/libcust_opapi.so",
+  "library_sha256": "4441735f57ae1a552ba948c4b9a5ffc470db0d6d4304101f31fabd0050f917ea",
+  "workspace_bytes": 73449472,
+  "backend": "aclnn",
+  "exact_indices": true,
+  "complete": true
+}
