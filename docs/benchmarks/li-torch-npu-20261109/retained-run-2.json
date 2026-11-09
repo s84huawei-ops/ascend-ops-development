@@ -1,0 +1,125 @@
+{
+  "seed": 20261111,
+  "device": 7,
+  "identities": {
+    "baseline": {
+      "elf": "/home/giraffe/ascendc-study/stan-li-prefill16k/build/paired/kernel_meta/LightningIndexer_2517851d7f53b28f971ff94bfa4b7037.o",
+      "sha256": "6b1129ba3e3fc3b35ddc7198701e3e7287a05d25efa337e418387a67a6ec0339",
+      "source_hashes": {
+        "arch22/lightning_indexer_kernel.h": "a5b154e15dd99a58f4071d941b3d73289b1e53d514a707c91e70ca206e875da9",
+        "arch22/lightning_indexer_paired_merge.h": "f7fe4212dda263b16b38ff5317a6cbee5537dd35eabbe394532008515bf152c3",
+        "arch22/lightning_indexer_service_cube.h": "77b89814d56c2bbb51649821da2f90019be9d59a8a7efe36f6e1d261320b00cd",
+        "arch22/lightning_indexer_service_vector.h": "54d993f3183028ecb8a049be25663e4eeb2410b82b54dfadfb0a47a8cf848b00",
+        "arch22/lightning_indexer_vector.h": "301faaab329f64648e0ec8a93f69e6f1ed5ba8dd067e8b46f7d751f5f54ab267",
+        "arch22/lightning_indexer_weight_cache.h": "74dd3650897a62c47aad41e06d759b30fb3dd85f3d6a4fff48e1d516a7217206",
+        "arch35/lightning_indexer_kernel.h": "f0a9480c7f6a78618dd3b27a83246bdd3addb1d85a27f1a90d2b403c79be174b",
+        "arch35/lightning_indexer_service_cube.h": "8aa4823c9631de541b1f728b696204ea892ffb8ec68623ed80ee356480b68121",
+        "arch35/lightning_indexer_service_vector.h": "bf9f4aae92041f3b300e64646f6261dfe1da53799944dc4ab13a00ead5966fa6",
+        "arch35/vf/lightning_indexer_topk.h": "06f83b05f1b879793089cdc9d2f8a865abdace88306f4eae6f4f723c27f60bce",
+        "arch35/vf/lightning_indexer_vector1.h": "f35a4deea49ac37792e87191af5aa4f9e1d54e5b9702889e339aa10d439e8a7e",
+        "arch35/vf/vf_topk.h": "b997f365c2730cafbe5e672944e08068ce74918e508fc54fbaa6fec58d5425a4",
+        "arch35/vf/vf_topk_16_gather.h": "6d1ceb35e2e9d7a9f961ab42043ce0f2bce2cd84adba447a130fb6e9e1d2a641",
+        "lightning_indexer.cpp": "8daa3ec56a041f7d8de241be7d2ff928a8498a97b9a453a74368b96404e8b271",
+        "lightning_indexer_common.h": "f3971bd6094ce60c1e2279cf9b09b5bbb800b11d27489c1e35869ab9625b17c1",
+        "lightning_indexer_template_tiling_key.h": "f4e7b753644d567c95c2fe8a8db3e785878e9021e1aabfac2beb45c3e969d70f"
+      },
+      "soc": "Ascend910B2"
+    },
+    "candidate": {
+      "elf": "/home/giraffe/ascendc-study/li-torch-npu-retained-20261109/build/kernel_meta/LightningIndexer_2517851d7f53b28f971ff94bfa4b7037.o",
+      "sha256": "f9ddd201118547547654b031145fba74ec8f1c3990bae9620bcacecc5dd39c25",
+      "source_hashes": {
+        "arch22/lightning_indexer_kernel.h": "a5b154e15dd99a58f4071d941b3d73289b1e53d514a707c91e70ca206e875da9",
+        "arch22/lightning_indexer_paired_merge.h": "5fb7fba6d992e671b3fb9c917d477bcd1efd4dda05a30a7e87215eb7239ec354",
+        "arch22/lightning_indexer_service_cube.h": "77b89814d56c2bbb51649821da2f90019be9d59a8a7efe36f6e1d261320b00cd",
+        "arch22/lightning_indexer_service_vector.h": "54d993f3183028ecb8a049be25663e4eeb2410b82b54dfadfb0a47a8cf848b00",
+        "arch22/lightning_indexer_vector.h": "301faaab329f64648e0ec8a93f69e6f1ed5ba8dd067e8b46f7d751f5f54ab267",
+        "arch22/lightning_indexer_weight_cache.h": "74dd3650897a62c47aad41e06d759b30fb3dd85f3d6a4fff48e1d516a7217206",
+        "arch35/lightning_indexer_kernel.h": "f0a9480c7f6a78618dd3b27a83246bdd3addb1d85a27f1a90d2b403c79be174b",
+        "arch35/lightning_indexer_service_cube.h": "8aa4823c9631de541b1f728b696204ea892ffb8ec68623ed80ee356480b68121",
+        "arch35/lightning_indexer_service_vector.h": "bf9f4aae92041f3b300e64646f6261dfe1da53799944dc4ab13a00ead5966fa6",
+        "arch35/vf/lightning_indexer_topk.h": "06f83b05f1b879793089cdc9d2f8a865abdace88306f4eae6f4f723c27f60bce",
+        "arch35/vf/lightning_indexer_vector1.h": "f35a4deea49ac37792e87191af5aa4f9e1d54e5b9702889e339aa10d439e8a7e",
+        "arch35/vf/vf_topk.h": "b997f365c2730cafbe5e672944e08068ce74918e508fc54fbaa6fec58d5425a4",
+        "arch35/vf/vf_topk_16_gather.h": "6d1ceb35e2e9d7a9f961ab42043ce0f2bce2cd84adba447a130fb6e9e1d2a641",
+        "lightning_indexer.cpp": "8daa3ec56a041f7d8de241be7d2ff928a8498a97b9a453a74368b96404e8b271",
+        "lightning_indexer_common.h": "f3971bd6094ce60c1e2279cf9b09b5bbb800b11d27489c1e35869ab9625b17c1",
+        "lightning_indexer_template_tiling_key.h": "f4e7b753644d567c95c2fe8a8db3e785878e9021e1aabfac2beb45c3e969d70f"
+      },
+      "soc": "Ascend910B2"
+    }
+  },
+  "adapter_sha256": "da4fca285c6bfe229bf3aa995d10d50d559e740bdd651c8dc7e8c0952adca4ea",
+  "method": "NPU events, alternating baseline/candidate direct ELF launches; identical owned workspace",
+  "cases": [
+    {
+      "batch": 1,
+      "query_length": 16384,
+      "key_length": 16384,
+      "heads": 64,
+      "query_dtype": "bf16",
+      "weights_dtype": "bf16",
+      "layout": "BSND",
+      "topk": 2048,
+      "return_values": false,
+      "zero_weights": false,
+      "key": 203547,
+      "blocks": 24,
+      "exact": true,
+      "samples_ms": {
+        "baseline": [
+          [
+            14.273940086364746,
+            14.176300048828125,
+            14.700440406799316,
+            15.104080200195312,
+            14.925680160522461,
+            15.031200408935547,
+            14.81626033782959,
+            14.945699691772461
+          ],
+          [
+            14.77966022491455,
+            14.879520416259766,
+            15.118180274963379,
+            14.98490047454834,
+            14.973119735717773,
+            14.948280334472656,
+            15.00846004486084,
+            14.94729995727539
+          ]
+        ],
+        "candidate": [
+          [
+            13.928179740905762,
+            14.854559898376465,
+            13.732500076293945,
+            14.346540451049805,
+            13.815079689025879,
+            14.301899909973145,
+            13.873299598693848,
+            13.755220413208008
+          ],
+          [
+            14.323160171508789,
+            14.725119590759277,
+            13.76255989074707,
+            14.066659927368164,
+            14.2560396194458,
+            14.089099884033203,
+            13.919960021972656,
+            13.80381965637207
+          ]
+        ]
+      },
+      "median_ms": {
+        "baseline": 14.946499824523926,
+        "candidate": 13.997419834136963
+      },
+      "speedup": 1.0678039239826431
+    }
+  ],
+  "exact_indices": true,
+  "exact_values": true,
+  "complete": true
+}

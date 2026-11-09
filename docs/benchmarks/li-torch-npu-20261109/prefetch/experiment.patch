@@ -1,0 +1,78 @@
+diff --git a/lightning_indexer/op_kernel/arch22/lightning_indexer_service_vector.h b/lightning_indexer/op_kernel/arch22/lightning_indexer_service_vector.h
+index bb853fa..9878e03 100644
+--- a/lightning_indexer/op_kernel/arch22/lightning_indexer_service_vector.h
++++ b/lightning_indexer/op_kernel/arch22/lightning_indexer_service_vector.h
+@@ -342,13 +342,21 @@ __aicore__ inline void LightningIndexerServiceVector<LIT>::ProcessVec(const LICo
+             if (constInfo_.isSparseCountOver2K) {
+                 WaitFlag<HardEvent::V_MTE2>(EVENTID_V_TO_MTE2_TMPUB);
+             }
++            int64_t cachedRowOffset = mmGmOffset +
++                innerS1Idx * gSize_ * info.actualSingleProcessSInnerSizeAlign;
++            if (cacheWeights) {
++                PrefetchCachedScores(tmpUb_, mm1ResGm, cachedRowOffset,
++                    info.actualSingleProcessSInnerSizeAlign, mmUbStride, 0);
++            }
+             for (int outerGidx = 0; outerGidx < outerG; outerGidx++) {
+                 int32_t procGnum = outerGidx != outerG - 1 ? groupInner_ : gSize_ - outerGidx * groupInner_;
+ 
+                 int32_t pingpong = outerGidx % 2;
+                 LocalTensor<float> dbTmpUb = tmpUb_[pingpong * (groupInner_ * s2BaseSize_ + s2BaseSize_)];
+                 LocalTensor<float> weightsInUb = dbTmpUb[procGnum * s2BaseSize_];
+-                WaitFlag<HardEvent::V_MTE2>(pingpong);
++                if (!cacheWeights) {
++                    WaitFlag<HardEvent::V_MTE2>(pingpong);
++                }
+                 LocalTensor<W_T> weightsInTUb = weightsInUb.template ReinterpretCast<W_T>();
+                 if constexpr (!IsSameType<W_T, float>::value) {
+                     weightsInTUb = weightsInTUb[groupInner_];
+@@ -358,17 +366,15 @@ __aicore__ inline void LightningIndexerServiceVector<LIT>::ProcessVec(const LICo
+                 int64_t weightGmAllOffset = weightGmOffset + innerS1Idx * gSize_ + outerGidx * groupInner_;
+ 
+                 if (cacheWeights) {
+-                    DataCopyPad(dbTmpUb, mm1ResGm[mmGmAllOffet],
+-                        DataCopyExtParams{static_cast<uint16_t>(procGnum),
+-                            static_cast<uint32_t>(info.actualSingleProcessSInnerSizeAlign * sizeof(float)),
+-                            0, static_cast<uint32_t>(mmUbStride), 0},
+-                        DataCopyPadExtParams<float>{false, 0, 0, 0});
++                    if (outerGidx + 1 < outerG) {
++                        PrefetchCachedScores(tmpUb_, mm1ResGm, cachedRowOffset,
++                            info.actualSingleProcessSInnerSizeAlign, mmUbStride, outerGidx + 1);
++                    }
+                 } else {
+                     LIServiceVec::CopyIn(dbTmpUb, weightsInTUb, mm1ResGm, weightsGm, mmGmAllOffet, weightGmAllOffset,
+                                          procGnum, info.actualSingleProcessSInnerSizeAlign, mmUbStride);
++                    SetFlag<HardEvent::MTE2_V>(pingpong);
+                 }
+-
+-                SetFlag<HardEvent::MTE2_V>(pingpong);
+                 WaitFlag<HardEvent::MTE2_V>(pingpong);
+                 if (cacheWeights) {
+                     ScaleWithCachedBf16Weights(reduceCacheBuf[REDUCE_BANK_CONFLICT_NUM], dbTmpUb,
+diff --git a/lightning_indexer/op_kernel/arch22/lightning_indexer_weight_cache.h b/lightning_indexer/op_kernel/arch22/lightning_indexer_weight_cache.h
+index 0c7f940..0cf7991 100644
+--- a/lightning_indexer/op_kernel/arch22/lightning_indexer_weight_cache.h
++++ b/lightning_indexer/op_kernel/arch22/lightning_indexer_weight_cache.h
+@@ -10,6 +10,23 @@
+ 
+ namespace LIServiceVec {
+ 
++// Queue the next group in the other score buffer before consuming the current
++// group, so MTE2 can overlap vector scaling. The caller consumes MTE2_V and
++// releases V_MTE2 after scaling, exactly once for each group.
++__aicore__ inline void PrefetchCachedScores(AscendC::LocalTensor<float> scratch,
++    AscendC::GlobalTensor<float> scores, int64_t rowOffset, uint32_t keyStride,
++    uint32_t ubStride, uint32_t group)
++{
++    using namespace AscendC;
++    uint32_t slot = group % 2;
++    auto destination = scratch[slot * (16 * 512 + 512)];
++    WaitFlag<HardEvent::V_MTE2>(slot);
++    DataCopyPad(destination, scores[rowOffset + group * 16 * keyStride],
++        DataCopyExtParams{16, static_cast<uint32_t>(keyStride * sizeof(float)), 0, ubStride, 0},
++        DataCopyPadExtParams<float>{false, 0, 0, 0});
++    SetFlag<HardEvent::MTE2_V>(slot);
++}
++
+ // The 64-head, eight-query tile has at most four query rows on each AIV.
+ // Its BF16 weights fit in the existing 512-byte broadcast scratch buffer.
+ __aicore__ inline void CacheBf16Weights(AscendC::LocalTensor<float> cache,

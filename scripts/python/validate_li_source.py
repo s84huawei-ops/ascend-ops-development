@@ -79,6 +79,8 @@ def main():
             (16,4097,64,'bf16','bf16','PA_BSND',2048,False,False),
             (2,4096,64,'bf16','bf16','BSND',2048,True,False),
             (8,4096,32,'bf16','bf16','BSND',1024,True,False),
+            (9,513,64,'bf16','bf16','BSND',1024,True,False),
+            (9,4097,64,'bf16','bf16','BSND',4096,True,False),
             (9,1024,64,'fp16','fp16','BSND',2048,True,False),
             (9,2049,64,'bf16','float','BSND',2048,True,False),
         ]

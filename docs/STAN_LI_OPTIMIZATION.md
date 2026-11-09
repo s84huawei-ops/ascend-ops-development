@@ -1,5 +1,9 @@
 # Lightning Indexer source optimization
 
+The subsequent optimization on `li-op-torch-npu` / `op-src:li-op/torch-npu`
+is documented in [LI_TORCH_NPU_OPTIMIZATION.md](LI_TORCH_NPU_OPTIMIZATION.md).
+The results below describe the earlier delivery used as its baseline.
+
 The delivery branch is `stan/li-prefill16k-opt` in both `ascend-ops-development`
 and its `op-src` submodule (`ascend-op-demo`). The deliverable is source code in
 `op-src/lightning_indexer`, built and tested in `stan_ascend_study` on Ascend910B2.

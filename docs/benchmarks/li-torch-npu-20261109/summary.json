@@ -1,0 +1,162 @@
+{
+    "date":  "2026-11-09",
+    "operator_commit":  "5aeb8640960e2b5f87dd5baaa0c4e42bf72b0c4e",
+    "baseline_commit":  "6bd80922dc7eea9ee379bf6583f20de5c5f4706a",
+    "selected":  "retained-count-only",
+    "device":  7,
+    "soc":  "Ascend910B2",
+    "baseline_ms":  14.946499824523926,
+    "candidate_ms":  14.070600032806396,
+    "speedup":  1.0622503510635879,
+    "latency_reduction_percent":  5.86023351286814,
+    "exact_matrix_cases":  15,
+    "matrix_report":  "prefetch/versus-retained.json (baseline lane is selected kernel)",
+    "exact_block_indices":  true,
+    "exact_block_hidden_states":  true,
+    "block_results":  {
+                          "1":  {
+                                    "native":  [
+                                                   [
+                                                       174.63375854492188,
+                                                       174.84498596191406,
+                                                       176.79385375976562,
+                                                       174.36268615722656,
+                                                       175.31333923339844,
+                                                       176.11167907714844,
+                                                       174.00514221191406,
+                                                       174.56268310546875
+                                                   ],
+                                                   [
+                                                       175.7410430908203,
+                                                       176.35513305664062,
+                                                       176.70455932617188,
+                                                       174.7577667236328,
+                                                       174.81378173828125,
+                                                       176.70989990234375,
+                                                       174.92886352539062,
+                                                       176.67018127441406
+                                                   ]
+                                               ],
+                                    "custom":  [
+                                                   [
+                                                       171.6121063232422,
+                                                       171.0497589111328,
+                                                       170.88092041015625,
+                                                       173.00726318359375,
+                                                       171.03302001953125,
+                                                       171.3193359375,
+                                                       171.13795471191406,
+                                                       170.55343627929688
+                                                   ],
+                                                   [
+                                                       172.61830139160156,
+                                                       172.26109313964844,
+                                                       171.27638244628906,
+                                                       170.1983642578125,
+                                                       170.98794555664062,
+                                                       171.04428100585938,
+                                                       172.21795654296875,
+                                                       171.68467712402344
+                                                   ]
+                                               ],
+                                    "profile":  {
+                                                    "native":  {
+                                                                   "indexer_us":  [
+                                                                                      17967.16,
+                                                                                      17955.48
+                                                                                  ],
+                                                                   "kernel_sum_us":  174931.80000000002,
+                                                                   "kernel_count":  91,
+                                                                   "csv":  "/home/giraffe/ascendc-study/li-torch-npu-retained-20261109/layer/profiles/layers-source_candidate-20261109-151820/1-native/def9e3d716c3_17407_20261109151836608_ascend_pt/ASCEND_PROFILER_OUTPUT/kernel_details.csv"
+                                                               },
+                                                    "custom":  {
+                                                                   "indexer_us":  [
+                                                                                      13121.92,
+                                                                                      13170.56
+                                                                                  ],
+                                                                   "kernel_sum_us":  170325.58999999994,
+                                                                   "kernel_count":  91,
+                                                                   "csv":  "/home/giraffe/ascendc-study/li-torch-npu-retained-20261109/layer/profiles/layers-source_candidate-20261109-151820/1-custom/def9e3d716c3_17407_20261109151843803_ascend_pt/ASCEND_PROFILER_OUTPUT/kernel_details.csv"
+                                                               }
+                                                },
+                                    "native_median_ms":  175.12110137939453,
+                                    "custom_median_ms":  171.20716857910156,
+                                    "speedup":  1.0228607997712704
+                                },
+                          "2":  {
+                                    "native":  [
+                                                   [
+                                                       349.90838623046875,
+                                                       353.3182678222656,
+                                                       349.7956237792969,
+                                                       350.02490234375,
+                                                       352.2195739746094,
+                                                       353.3782043457031,
+                                                       354.8548583984375,
+                                                       351.4647521972656
+                                                   ],
+                                                   [
+                                                       352.4235534667969,
+                                                       352.0863037109375,
+                                                       350.8458251953125,
+                                                       350.9847106933594,
+                                                       351.4468078613281,
+                                                       352.65765380859375,
+                                                       353.78912353515625,
+                                                       351.6688537597656
+                                                   ]
+                                               ],
+                                    "custom":  [
+                                                   [
+                                                       342.8775939941406,
+                                                       345.0377502441406,
+                                                       344.1673278808594,
+                                                       343.731201171875,
+                                                       344.7420654296875,
+                                                       344.68487548828125,
+                                                       344.1629943847656,
+                                                       343.6767578125
+                                                   ],
+                                                   [
+                                                       343.7432861328125,
+                                                       342.72210693359375,
+                                                       343.7558898925781,
+                                                       344.0877685546875,
+                                                       344.6464538574219,
+                                                       344.2557678222656,
+                                                       344.8761291503906,
+                                                       342.3238220214844
+                                                   ]
+                                               ],
+                                    "profile":  {
+                                                    "native":  {
+                                                                   "indexer_us":  [
+                                                                                      17971.38,
+                                                                                      17958.78,
+                                                                                      17984.68,
+                                                                                      17924.6
+                                                                                  ],
+                                                                   "kernel_sum_us":  350276.8399999999,
+                                                                   "kernel_count":  182,
+                                                                   "csv":  "/home/giraffe/ascendc-study/li-torch-npu-retained-20261109/layer/profiles/layers-source_candidate-20261109-151820/2-native/def9e3d716c3_17407_20261109151920992_ascend_pt/ASCEND_PROFILER_OUTPUT/kernel_details.csv"
+                                                               },
+                                                    "custom":  {
+                                                                   "indexer_us":  [
+                                                                                      13396.76,
+                                                                                      13260.48,
+                                                                                      13269.58,
+                                                                                      13367.7
+                                                                                  ],
+                                                                   "kernel_sum_us":  343503.84999999986,
+                                                                   "kernel_count":  182,
+                                                                   "csv":  "/home/giraffe/ascendc-study/li-torch-npu-retained-20261109/layer/profiles/layers-source_candidate-20261109-151820/2-custom/def9e3d716c3_17407_20261109151930570_ascend_pt/ASCEND_PROFILER_OUTPUT/kernel_details.csv"
+                                                               }
+                                                },
+                                    "native_median_ms":  351.87757873535156,
+                                    "custom_median_ms":  344.12538146972656,
+                                    "speedup":  1.0225272464138393
+                                }
+                      },
+    "rejected_experiment":  "score prefetch: mixed per-round wins and losses, no consistent benefit",
+    "production_package_rebuilt":  false
+}
